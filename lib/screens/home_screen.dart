@@ -21,6 +21,70 @@ class _HomeScreenState extends State<HomeScreen> {
   await _products.update({"name": name, "price": price});
   await _products.doc(productId).delete();
   */
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
+
+  Future<void> _update(DocumentSnapshot? documentSnapshot) async {
+    if (documentSnapshot != null) {
+      // when thest fields are shown up they will be filled with previous data
+      _nameController.text = documentSnapshot["name"];
+      _priceController.text = documentSnapshot["price"].toString();
+    }
+
+    // when user click update a bottom sheat will come, where user enter data
+    await showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      builder: (BuildContext ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+              top: 20,
+              left: 20,
+              right: 20,
+              // prevent the soft keyboard from converting text fields
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
+          child: Column(
+            // take as many height as it required
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              TextField(
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                controller: _priceController,
+                decoration: const InputDecoration(labelText: 'Price'),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final String name = _nameController.text;
+                  final double? price = double.tryParse(_priceController.text);
+
+                  if (price != null) {
+                    await _products
+                        .doc(documentSnapshot!.id)
+                        .update({"name": name, "price": price});
+
+                    _nameController.text = "";
+                    _priceController.text = "";
+                  }
+                },
+                child: const Text("Update"),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,6 +112,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: Text(documentSnapshot['name']),
                     subtitle: Text(
                       documentSnapshot['price'].toString(),
+                    ),
+                    trailing: SizedBox(
+                      width: 100,
+                      child: Row(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              // documentSnapshot is a single document which is comming from streamSnapshot.data!.docs[index];
+                              _update(documentSnapshot);
+                            },
+                            icon: const Icon(
+                              Icons.edit,
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 );
