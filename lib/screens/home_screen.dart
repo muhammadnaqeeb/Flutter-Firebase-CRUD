@@ -142,6 +142,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _delete(String productId) async {
+    await _products.doc(productId).delete();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Deleted Successfully!"),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -190,7 +200,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             icon: const Icon(
                               Icons.edit,
                             ),
-                          )
+                          ),
+                          // DELETE
+                          IconButton(
+                            onPressed: () {
+                              // documentSnapshot is a single document which is comming from streamSnapshot.data!.docs[index];
+                              _delete(documentSnapshot.id);
+                            },
+                            icon: const Icon(
+                              Icons.delete,
+                            ),
+                          ),
                         ],
                       ),
                     ),
